@@ -112,4 +112,6 @@ plt.title(f'Final Ensemble Matrix (Acc: {acc:.2%})')
 plt.savefig('./results/final_ensemble_matrix.png')
 
 joblib.dump(best_model,'./results/final_ensemble_model.pkl')
-print("Model saved sucessfully as 'final_ensemble_model.pkl")
+joblib.dump(scaler, './results/scaler.pkl')
+joblib.dump(le,'./results/label_encoder.pkl')
+print("Model, Scaler and Encoder saved!")
