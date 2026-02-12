@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -10,16 +11,11 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 # --- Load Data ---
-df = pd.read_csv('../features_3_sec.csv')
+df = pd.read_csv('./results/features_enhanced_all.csv') #file path
 
-# --- feature engineering & cleanup ---
-#we need to extract the "Song ID" from the filename for GroupShuffleSplit
-#format is: genre.00000.0.wav -> We want "genre.00000"
-df['song_id'] = df['filename'].apply(lambda x: x.rsplit('.', 2)[0])
-
-X = df.drop(['filename', 'length', 'label', 'song_id'], axis=1)
+X = df.drop(['filename','label'], axis=1)
 y = df['label']
-groups = df['song_id']
+groups = df['filename']
 
 # --- robust splitting (Prevent Data Leakage) ---
 #split by SONG
@@ -42,23 +38,22 @@ y_test_enc=le.transform(y_test)
 print(f"Training on {len(X_train)} samples")
 print(f"Testing on {len(X_test)} samples")
 
-# --- Pre-Tuned Params ---
 rf = RandomForestClassifier(
-    n_estimators=500,
+    n_estimators=200,
     max_depth=None,
     min_samples_split=2,
     random_state=42,
-    n_jobs=2
+    n_jobs=1
 )
 #xgb: slow learning rate 0.5 to avoid overfitting
 xgb = XGBClassifier(
     n_estimators=500,
     learning_rate=0.05, 
-    max_depth=6,
-    subsample=0.8,
+    max_depth=4,
+    subsample=0.7,
     colsample_bytree=0.8,
     random_state=42,
-    n_jobs=2,
+    n_jobs=1,
     eval_metric='mlogloss'
 )
 #SVM
@@ -84,7 +79,7 @@ param_grid = {
         [1, 2, 2]   # Trust Math (XGB+SVM) more than RF
     ]
 }
-# We must use GroupShuffleSplit INSIDE the Cross-Validation too
+#use GroupShuffleSplit INSIDE the Cross-Validation too
 cv_splitter = GroupShuffleSplit(n_splits=3, test_size=0.2, random_state=42)
 groups_train = groups.iloc[train_idx]
 
@@ -114,4 +109,7 @@ cm = confusion_matrix(y_test_enc, y_pred)
 plt.figure(figsize=(10, 8))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=le.classes_, yticklabels=le.classes_)
 plt.title(f'Final Ensemble Matrix (Acc: {acc:.2%})')
-plt.savefig('final_ensemble_matrix.png')
+plt.savefig('./results/final_ensemble_matrix.png')
+
+joblib.dump(best_model,'./results/final_ensemble_model.pkl')
+print("Model saved sucessfully as 'final_ensemble_model.pkl")
