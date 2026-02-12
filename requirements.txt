@@ -5,4 +5,5 @@ seaborn
 matplotlib
 scikit-learn
 librosa
-opencv-python
+xgboost
+tqdm
