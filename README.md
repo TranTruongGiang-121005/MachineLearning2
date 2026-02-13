@@ -18,6 +18,7 @@ pip install -r requirements.txt
 - `pandas`, `numpy` - Data handling
 - `matplotlib`, `seaborn` - Visualization
 - `joblib` - Model persistence
+- `streamlit` - Presentation
 
 ## Running
 ### To create a new dataset based on genres_original folder
@@ -27,4 +28,8 @@ python3 generate_enhanced_database.py
 ### Train the model
 ```bash
 python3 train2.py
+```
+### Run the streamlit app
+```bash
+streamlit run app.py
 ```
